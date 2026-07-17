@@ -1,0 +1,6 @@
+# VM-only suites (pure Dart; no browser lane — the two-world proof for
+# the family's CLDR claims lives in fluent_icu's chrome lane).
+#
+#   dart test        # or: make test / make check
+
+platforms: [vm]

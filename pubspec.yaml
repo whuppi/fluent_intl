@@ -1,0 +1,39 @@
+name: fluent_intl
+version: 0.0.0
+description: >-
+  package:intl backend for fluent_bundle — real CLDR plural rules and
+  locale-aware number, currency, and date-time formatting for Project
+  Fluent.
+homepage: https://github.com/whuppi/fluent_intl
+repository: https://github.com/whuppi/fluent_intl
+issue_tracker: https://github.com/whuppi/fluent_intl/issues
+
+topics:
+  - i18n
+  - localization
+  - fluent
+  - intl
+
+environment:
+  sdk: ^3.7.0
+
+# Path dep on the core while the family is unpublished — the release
+# checklist flips it to a hosted version at publish time.
+dependencies:
+  # The core this package is a backend FOR — re-exported from the barrel.
+  fluent_bundle:
+    path: ../fluent_bundle
+  # intl's version is kept fresh against flutter_localizations' per-Flutter
+  # pin — THE reason this backend is a satellite, so the core never waits.
+  intl: ">=0.19.0 <0.21.0"
+
+  # Spelled-out currency names for `currencyDisplay: "name"` (intl has none).
+  l10n_currencies: ^2.0.2
+
+dev_dependencies:
+  # Lint rules
+  lints: ^5.0.0
+
+  # Test runner
+  test: ^1.25.0
+  yaml: ^3.1.0
