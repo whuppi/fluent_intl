@@ -4,15 +4,17 @@
   <a href="https://pub.dev/packages/fluent_intl"><img src="https://img.shields.io/pub/v/fluent_intl.svg" alt="pub package"></a>
   <a href="https://pub.dev/packages/fluent_intl/score"><img src="https://img.shields.io/pub/likes/fluent_intl" alt="likes"></a>
   <a href="https://pub.dev/packages/fluent_intl/score"><img src="https://img.shields.io/pub/points/fluent_intl" alt="pub points"></a>
-  <a href="https://github.com/whuppi/fluent_intl"><img src="https://img.shields.io/github/stars/whuppi/fluent_bundle?style=flat&logo=github" alt="GitHub stars"></a>
+  <a href="https://github.com/whuppi/fluent_intl"><img src="https://img.shields.io/github/stars/whuppi/fluent_intl?style=flat&logo=github" alt="GitHub stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license: MIT"></a>
 </p>
 
-The zero-setup CLDR backend for [`fluent_bundle`](https://pub.dev/packages/fluent_bundle). Plug it into a bundle and Fluent's `[one]` / `[few]` / `[many]` variants fire per real CLDR plural rules, and `NUMBER` / `DATETIME` render locale-aware — grouping, currency symbols, minor units, date styles — through `package:intl`.
+The zero-setup formatting backend for [`fluent_bundle`](https://pub.dev/packages/fluent_bundle). Add it to a bundle, and Fluent's `[one]` / `[few]` / `[many]` plural cases start matching by each language's real rules, while `NUMBER` and `DATETIME` format the local way — digit grouping, currency symbols, the right number of decimal places, date styles — using `package:intl`.
 
 No initialization, no native code, no assets. Construct `IntlBackend()` and go. Pure Dart on every platform.
 
-> **This is a backend — an add-on, not a starting point.** Flutter apps start at [`fluent_flutter`](https://pub.dev/packages/fluent_flutter); pure Dart starts at [`fluent_bundle`](https://pub.dev/packages/fluent_bundle). Between the two backends, this one is the lightweight default; when you need the options `package:intl` has no knob for (measurement units, non-Gregorian calendars, time zones, numbering systems, every-locale ordinals), that's [`fluent_icu`](https://pub.dev/packages/fluent_icu) — same FTL, same call sites, swap the constructor.
+> **This is a backend — an add-on, not a starting point.** Flutter apps start at [`fluent_flutter`](https://pub.dev/packages/fluent_flutter); pure Dart starts at [`fluent_bundle`](https://pub.dev/packages/fluent_bundle). Of the two backends, this is the lighter default. When you need something `package:intl` has no option for — measurement units, non-Gregorian calendars, time zones, other digit systems, ordinals for every language — switch to [`fluent_icu`](https://pub.dev/packages/fluent_icu): same `.ftl`, same calls, one changed line.
+
+> **Status:** 0.x. The API can change between minor versions until `1.0.0` — pre-1.0, the minor is the breaking axis, so pin `^0.N.0` and read the changelog on minor bumps.
 
 > like it? a [⭐ star](https://github.com/whuppi/fluent_intl) or [👍 like](https://pub.dev/packages/fluent_intl) is the entire marketing budget. [Bugs & features →](https://github.com/whuppi/fluent_intl/issues)
 
@@ -28,7 +30,7 @@ No initialization, no native code, no assets. Construct `IntlBackend()` and go. 
   - [Currency](#currency)
   - [Dates and times](#dates-and-times)
   - [Plurals and ordinals](#plurals-and-ordinals)
-- [Error handling — the degrade contract](#error-handling--the-degrade-contract)
+- [Error handling — when an option can't be applied](#error-handling--when-an-option-cant-be-applied)
 - [Platform support](#platform-support)
 - [Not in the box](#not-in-the-box)
 - [Docs](#docs)
@@ -70,13 +72,13 @@ print(bundle.formatMessage('items', args: {'count': 5}));       // "5 items"
 print(bundle.formatMessage('price', args: {'amount': 1234.5})); // "$1,234.50"
 ```
 
-That's the whole integration. Everything else — messages, selectors, markup, chains, errors — is `fluent_bundle`'s surface, unchanged; this package only decides how numbers, dates, and plural categories render.
+That's the whole integration. Everything else — messages, selectors, markup, fallback, errors — works exactly as it does in `fluent_bundle`; this package only decides how numbers, dates, and plural categories come out.
 
 ---
 
 ## Usage
 
-One `NUMBER` / `DATETIME` option family per section. Every snippet's output is pinned by the example test.
+One group of `NUMBER` / `DATETIME` options per section. Every result below is checked by the example test.
 
 ### Numbers
 
@@ -93,7 +95,7 @@ en.formatMessage('plain', args: {'n': 1234567.89});   // "1,234,567.89"
 de.formatMessage('plain', args: {'n': 1234567.89});   // "1.234.567,89"
 hi.formatMessage('plain', args: {'n': 1234567.89});   // "12,34,567.89"  ← lakh/crore grouping
 
-// ECMA-402 percent scales ×100 — pass the fraction, not the percentage:
+// Percent multiplies the value by 100 — pass the fraction, not the percentage:
 en.formatMessage('pct', args: {'share': 0.42});       // "42%"
 
 en.formatMessage('compact', args: {'n': 1234000});    // "1.2M"
@@ -135,11 +137,11 @@ de.formatMessage('fields', args: {'at': at});   // "15. Januar 2026"
 de.formatMessage('clock', args: {'at': at});    // "14:05"
 ```
 
-Both shapes work: the two-knob `dateStyle` / `timeStyle` presets, and the per-field bags (`year`, `month`, `day`, `hour`, `minute`, …) composed into an intl skeleton.
+Both styles work: the two presets `dateStyle` / `timeStyle`, and the per-field options (`year`, `month`, `day`, `hour`, `minute`, …) combined into a custom format.
 
 ### Plurals and ordinals
 
-The reason a backend exists at all — CLDR category selection for Fluent's selectors:
+The main reason to add a backend — picking the right plural category for Fluent's selectors:
 
 ```dart
 const ftl = r'''
@@ -163,13 +165,13 @@ en.formatMessage('items', args: {'count': 2});   // "2 items"
 // "1st", "2nd", "3rd", "4th"
 ```
 
-Cardinals cover every CLDR locale. Ordinals are this package's own contribution — `package:intl` ships no ordinal rules, so the 42 CLDR locales with non-trivial ones are inlined here and compliance-tested against CLDR. Beyond those, categories fall back to `other`; [`fluent_icu`](https://pub.dev/packages/fluent_icu) covers every locale.
+Cardinal plurals ("1 item" / "5 items") work for every language. Ordinals ("1st, 2nd, 3rd") are this package's own addition — `package:intl` ships none — so the languages with non-trivial ordinal rules are built in here and tested against the Unicode data. Other languages fall back to the catch-all category; [`fluent_icu`](https://pub.dev/packages/fluent_icu) covers every language.
 
 ---
 
-## Error handling — the degrade contract
+## Error handling — when an option can't be applied
 
-`package:intl` has no knob for some ECMA-402 options (`roundingMode`, `signDisplay`, measurement units, calendars, time zones). This backend never silently drops one: it renders the nearest supported form **and** records a `FluentTypeError` in the caller's error list.
+`package:intl` has no setting for some options (`roundingMode`, `signDisplay`, measurement units, calendars, time zones). This backend never quietly ignores one: it renders the closest form it can **and** records a `FluentTypeError` in the error list you pass in.
 
 ```dart
 final en = FluentBundle('en', backend: IntlBackend(), useIsolating: false)
@@ -181,9 +183,9 @@ final out = en.formatMessage('rounded', args: {'n': 2.9}, errors: errors);
 // errors: [FluentTypeError]   ← the gap, on the record
 ```
 
-Users see reasonable output; QA sees every gap in the error stream. The core's conformance harness proves this in both directions for every declared gap — supported options render with zero errors, unsupported ones degrade with exactly one. The full support matrix per option lives in [Capabilities](docs/CAPABILITY_ROADMAP.md).
+Users see reasonable output; your tests see every gap. `fluent_bundle`'s test harness checks both directions for every known gap — supported options render with no error, unsupported ones fall back with exactly one. The full per-option list is in [Capabilities](docs/CAPABILITY_ROADMAP.md).
 
-Everything else about errors is [`fluent_bundle`'s contract](https://pub.dev/packages/fluent_bundle): inert values, never throws.
+Everything else about errors follows [`fluent_bundle`'s rule](https://pub.dev/packages/fluent_bundle): failures are values, never thrown.
 
 ---
 
@@ -199,10 +201,10 @@ Pure Dart, no conditional imports, no platform code:
 
 ## Not in the box
 
-What `package:intl` can't do, this backend can't either — by design it degrades loud (see above) rather than approximating quietly:
+What `package:intl` can't do, this backend can't either — and by design it says so out loud (see above) instead of quietly guessing:
 
 - **Measurement units** (`style: "unit"`), **non-Gregorian calendars**, **time zones**, **numbering systems**, **`signDisplay` / `roundingMode`** — [`fluent_icu`](https://pub.dev/packages/fluent_icu) renders all of these, on the same FTL.
-- **Ordinal rules beyond the 42 inlined locales** — same answer.
+- **Ordinal rules beyond the inlined locales** — same answer.
 - **Message translation workflow** (ARB catalogs, extraction) — different job; this package formats, it doesn't manage translations.
 
 ---
@@ -213,10 +215,10 @@ The README covers the everyday stuff. wanna go deeper?
 
 | Doc | What's inside |
 |---|---|
-| [Architecture](docs/ARCHITECTURE.md) | How it's built: the backend surface, the option mapping, the degrade walls |
-| [Capabilities](docs/CAPABILITY_ROADMAP.md) | The per-option support matrix: rendered, degraded, or spec-fallback |
+| [Architecture](docs/ARCHITECTURE.md) | How it's built: the backend, how options map across, where it falls back |
+| [Capabilities](docs/CAPABILITY_ROADMAP.md) | Every option, and whether it renders fully, falls back, or isn't supported |
 | [Updating](docs/UPDATING.md) | Maintenance recipes and the upstream (intl) watchlist |
-| [Example](example/) | The whole tour in one runnable file, output pinned by test |
+| [Example](example/) | The whole tour in one runnable file, output checked by test |
 
 ---
 
