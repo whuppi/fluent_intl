@@ -24,7 +24,6 @@
 // VM-only: this runner reads `.yaml` fixtures from disk via `dart:io`.
 // The bundle resolver itself is pure-Dart and cross-platform; the corpus
 // harness is the only piece that needs filesystem access.
-@TestOn('vm')
 library;
 
 import 'dart:io';
@@ -33,7 +32,7 @@ import 'package:fluent_intl/fluent_intl.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
-void main() {
+void registerBundleCorpusTests() {
   final dir = Directory('test/_corpus/bundle');
   final fixtures =
       dir

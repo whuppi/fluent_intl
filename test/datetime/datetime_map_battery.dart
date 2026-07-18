@@ -5,7 +5,7 @@
 import 'package:fluent_intl/fluent_intl.dart';
 import 'package:test/test.dart';
 
-void main() {
+void registerDatetimeMapTests() {
   group('IntlBackend — DATETIME hour fields', () {
     test('bare hour fields keep the locale-preferred cycle', () {
       // en prefers 12-hour time; a bare `hour` must NOT force 24h.

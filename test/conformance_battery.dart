@@ -2,7 +2,7 @@ import 'package:fluent_bundle/testing.dart';
 import 'package:fluent_intl/fluent_intl.dart';
 import 'package:test/test.dart';
 
-void main() {
+void registerConformanceTests() {
   group('IntlBackend conformance', () {
     // intl gives real CLDR categories AND honors visible fraction digits
     // (the resolveDigits precision is threaded into Intl.pluralLogic), so

@@ -97,11 +97,29 @@ format:
 #                   files that declare @TestOn('vm').
 test-guards:
 	@bad=""; \
-	for f in $$(grep -rlE "import 'dart:(io|ffi)'" test/ --include="*.dart"); do \
-	  grep -q "@TestOn('vm')" "$$f" || bad="$$bad$$f\n"; \
+	for f in $$(grep -rlE "import 'dart:(io|ffi)'" test/ --include="*.dart" | grep -v "test/runners/"); do \
+	  grep -qi "vm-only:" "$$f" || bad="$$bad$$f\n"; \
 	done; \
 	if [ -n "$$bad" ]; then \
-	  echo "VM-only import in a two-world suite (add @TestOn('vm')):"; \
+	  echo "dart:io/ffi in a battery without a 'vm-only: <reason>' marker:"; \
+	  printf "$$bad"; exit 1; fi
+	@bad=$$(find test -name "*_test.dart" ! -path "test/runners/*"); \
+	if [ -n "$$bad" ]; then \
+	  echo "Test entry outside test/runners/ — suites are batteries, runners"; \
+	  echo "are the only *_test.dart entry points:"; \
+	  echo "$$bad"; exit 1; fi
+	@bad=""; \
+	for f in $$(find test -name "*_battery.dart"); do \
+	  rel=$${f#test/}; \
+	  grep -q "$$rel" test/runners/vm_runner_test.dart || bad="$$bad$$f (missing from vm runner)\n"; \
+	  if grep -qi "vm-only:" "$$f"; then \
+	    grep -q "$$rel" test/runners/web_runner_test.dart && bad="$$bad$$f (vm-only battery in web runner)\n"; \
+	  else \
+	    grep -q "$$rel" test/runners/web_runner_test.dart || bad="$$bad$$f (missing from web runner)\n"; \
+	  fi; \
+	done; \
+	if [ -n "$$bad" ]; then \
+	  echo "battery/runner completeness violation:"; \
 	  printf "$$bad"; exit 1; fi
 	@echo "✓ test guards clean"
 
@@ -112,9 +130,9 @@ test-guards:
 # make test     The full VM suite.
 
 test:
-	@echo "=== VM suite ==="
+	@echo "=== VM lane (batteries via test/runners/vm_runner_test.dart) ==="
 	@mkdir -p $(TEST_RESULTS_DIR)
-	@$(DART) test $(TIMEOUT) --file-reporter json:$(TEST_RESULTS_DIR)/vm.json
+	@$(DART) test $(TIMEOUT) test/runners/vm_runner_test.dart --file-reporter json:$(TEST_RESULTS_DIR)/vm.json
 
 # make test-web  The same suites in real Chrome (dart test -p chrome). The
 #                @TestOn('vm') corpus suite skips itself in the browser world.
@@ -127,14 +145,14 @@ test-web:
 	  chmod +x $(TEST_RESULTS_DIR)/chrome-ci; \
 	  export CHROME_EXECUTABLE="$$PWD/$(TEST_RESULTS_DIR)/chrome-ci"; \
 	fi; \
-	$(DART) test -p chrome $(TIMEOUT) --file-reporter json:$(TEST_RESULTS_DIR)/web.json
+	$(DART) test -p chrome $(TIMEOUT) test/runners/web_runner_test.dart --file-reporter json:$(TEST_RESULTS_DIR)/web.json
 
 # make test-example  The pub.dev showcase (example/main.dart) run with
 #                    its output pinned — every Example-tab claim proven.
 test-example:
 	@echo "=== Example showcase (pinned output) ==="
 	@mkdir -p $(TEST_RESULTS_DIR)
-	@$(DART) test $(TIMEOUT) test/example --file-reporter json:$(TEST_RESULTS_DIR)/example.json
+	@$(DART) test $(TIMEOUT) test/runners/example_runner_test.dart --file-reporter json:$(TEST_RESULTS_DIR)/example.json
 
 # ═══════════════════════════════════════════════════════════════════
 # § 4 — Clean

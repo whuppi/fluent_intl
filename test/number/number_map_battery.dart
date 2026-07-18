@@ -4,7 +4,7 @@
 import 'package:fluent_intl/fluent_intl.dart';
 import 'package:test/test.dart';
 
-void main() {
+void registerNumberMapTests() {
   group('IntlBackend — locale-aware NUMBER', () {
     test('grouping separators per locale', () {
       final b = FluentBundle('en', backend: IntlBackend(), useIsolating: false)

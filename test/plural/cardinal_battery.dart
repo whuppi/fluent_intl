@@ -4,7 +4,7 @@
 import 'package:fluent_intl/fluent_intl.dart';
 import 'package:test/test.dart';
 
-void main() {
+void registerCardinalTests() {
   group('IntlBackend — plural selection uses visible fraction digits (F8)', () {
     const ftl = 'count = { \$n ->\n    [one] one\n   *[other] other\n}';
     test('1 => one; 1 with minFrac 1 (renders "1.0") => other', () {

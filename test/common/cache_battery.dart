@@ -6,7 +6,7 @@ import 'package:intl/date_symbol_data_local.dart' as intl_data;
 import 'package:intl/intl.dart' as intl;
 import 'package:test/test.dart';
 
-void main() {
+void registerCacheTests() {
   group('IntlMemoizer', () {
     setUpAll(intl_data.initializeDateFormatting);
     test('same key returns the same instance without re-invoking create', () {

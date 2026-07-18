@@ -5,7 +5,7 @@
 import 'package:fluent_intl/fluent_intl.dart';
 import 'package:test/test.dart';
 
-void main() {
+void registerNumberMapCacheTests() {
   test('compactDisplay variants do not collide in the formatter cache', () {
     final bundle = FluentBundle(
       'en-US',

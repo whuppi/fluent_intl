@@ -19,7 +19,7 @@ import 'package:test/test.dart';
 
 import '_cldr_ordinal_examples.dart';
 
-void main() {
+void registerOrdinalCldrComplianceTests() {
   group('ordinal rules match the CLDR examples', () {
     for (final entry in cldrOrdinalExamples.entries) {
       final locale = entry.key;

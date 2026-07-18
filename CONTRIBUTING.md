@@ -35,7 +35,7 @@ make check
 ```
 
 Runs `lint-shell` + `analyze` + `analyze-floor` + `platforms` (the
-same pana pub.dev runs) + `test-guards` (two-world suite rules) +
+same pana pub.dev runs) + `test-guards` (battery / runner rules) +
 `test` (VM) + `test-web` (the same suites in real Chrome) +
 `test-example` (the pinned showcase).
 Must pass. Don't suppress with `// ignore:` — fix the underlying
