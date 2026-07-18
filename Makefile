@@ -121,7 +121,13 @@ test:
 test-web:
 	@echo "=== Chrome suite (dart test -p chrome) ==="
 	@mkdir -p $(TEST_RESULTS_DIR)
-	@$(DART) test -p chrome $(TIMEOUT) --file-reporter json:$(TEST_RESULTS_DIR)/web.json
+	@if [ "$$(uname -s)" = "Linux" ] && [ -n "$$CI" ]; then \
+	  base="$${CHROME_EXECUTABLE:-$$(command -v google-chrome-stable || command -v google-chrome || command -v chromium)}"; \
+	  printf '#!/bin/sh\nexec "%s" --no-sandbox --disable-gpu "$$@"\n' "$$base" > $(TEST_RESULTS_DIR)/chrome-ci; \
+	  chmod +x $(TEST_RESULTS_DIR)/chrome-ci; \
+	  export CHROME_EXECUTABLE="$$PWD/$(TEST_RESULTS_DIR)/chrome-ci"; \
+	fi; \
+	$(DART) test -p chrome $(TIMEOUT) --file-reporter json:$(TEST_RESULTS_DIR)/web.json
 
 # make test-example  The pub.dev showcase (example/main.dart) run with
 #                    its output pinned — every Example-tab claim proven.
