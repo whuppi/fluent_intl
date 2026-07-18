@@ -83,6 +83,9 @@ jobs:
           - { name: "pkg: Linux (ubuntu-x64)", runner: ubuntu-24.04, make: test, timeout: 20 }
           - { name: "pkg: macOS (macos-arm64)", runner: macos-14, make: test, timeout: 20 }
           - { name: "pkg: Windows (win-x64)", runner: windows-2025-vs2026, make: test, timeout: 30 }
+          - { name: "pkg: Web (ubuntu-x64)", runner: ubuntu-24.04, make: test-web, timeout: 30, chrome: true, headless-display: true }
+          - { name: "pkg: Web (macos-arm64) [P]", runner: macos-14, make: test-web, timeout: 30, chrome: true, portability: true }
+          - { name: "pkg: Web (win-x64) [P]", runner: windows-2025-vs2026, make: test-web, timeout: 40, chrome: true, portability: true }
           - { name: "int: Showcase (ubuntu-x64)", runner: ubuntu-24.04, make: test-example, timeout: 15 }
           - { name: "int: Showcase (macos-arm64)", runner: macos-14, make: test-example, timeout: 15 }
           - { name: "int: Showcase (win-x64)", runner: windows-2025-vs2026, make: test-example, timeout: 20 }
