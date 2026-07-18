@@ -123,8 +123,9 @@ Future<void> main() async {
   client.close();
 
   final json = jsonDecode(body) as Map<String, dynamic>;
-  final rules = (json['supplemental']
-      as Map<String, dynamic>)['plurals-type-ordinal'] as Map<String, dynamic>;
+  final rules =
+      (json['supplemental'] as Map<String, dynamic>)['plurals-type-ordinal']
+          as Map<String, dynamic>;
 
   // Build the inventory. `allLocales` is sorted for determinism so
   // the file diff is minimal across regens.
@@ -226,8 +227,10 @@ Future<void> main() async {
   await File(kOutputPath).writeAsString(buf.toString());
   // Normalize to the formatter's shape so the emitted fixture matches
   // what the format gate enforces — a regen never shows style-only diffs.
-  final fmt =
-      await Process.run(Platform.resolvedExecutable, ['format', kOutputPath]);
+  final fmt = await Process.run(Platform.resolvedExecutable, [
+    'format',
+    kOutputPath,
+  ]);
   if (fmt.exitCode != 0) {
     stderr.write(fmt.stderr);
     exitCode = fmt.exitCode;

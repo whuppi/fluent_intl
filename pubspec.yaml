@@ -21,8 +21,7 @@ environment:
 # release checklist flips it to a hosted version at publish time.
 dependencies:
   # The package this is a backend FOR — re-exported from its main library.
-  fluent_bundle:
-    path: ../fluent_bundle
+  fluent_bundle: ^0.1.0
   # intl's version is kept fresh against flutter_localizations' per-Flutter
   # pin — THE reason this backend is a separate package, so fluent_bundle never waits.
   intl: ">=0.19.0 <0.21.0"
