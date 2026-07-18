@@ -60,6 +60,10 @@ CONTENT RULES (never change)
 
 <!-- Add new versions below, newest first. -->
 
+## 0.1.1
+
+- Docs: the install snippet lists only `fluent_intl` (it re-exports `fluent_bundle`).
+
 ## 0.1.0
 
 First release — the zero-setup formatting backend for fluent_bundle, built on `package:intl`.
