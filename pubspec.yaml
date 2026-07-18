@@ -1,5 +1,5 @@
 name: fluent_intl
-version: 0.0.0
+version: 0.1.0
 description: >-
   package:intl formatting backend for fluent_bundle — per-language plural
   rules and locale-aware number, currency, and date formatting. Zero
