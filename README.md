@@ -44,7 +44,6 @@ No initialization, no native code, no assets. Construct `IntlBackend()` and go. 
 
 ```yaml
 dependencies:
-  fluent_bundle:
   fluent_intl:
 ```
 
