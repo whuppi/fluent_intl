@@ -59,3 +59,12 @@ CONTENT RULES (never change)
 -->
 
 <!-- Add new versions below, newest first. -->
+
+## 0.1.0
+
+First release — the zero-setup formatting backend for fluent_bundle, built on `package:intl`.
+
+- **Formatting:** locale-aware number, currency, and date formatting — digit grouping, currency symbols, the right number of decimal places, date styles.
+- **Plurals:** real per-language plural rules for Fluent's `[one]` / `[few]` / `[many]` cases, plus ordinals (1st, 2nd, 3rd) for the languages that have non-trivial ones; other languages fall back to the catch-all category.
+- **When an option isn't available:** options `package:intl` has no setting for (measurement units, calendars, time zones, roundingMode, signDisplay) render the nearest form and record the gap — never silently dropped.
+- **Platforms:** pure Dart — no native code, no assets, no setup. Every platform.
