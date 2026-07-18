@@ -1,14 +1,7 @@
 # CI — every PR. Fast gate: each job runs a Makefile target through the
 # shared make-target action, so the same commands run locally. Format runs
 # inside `analyze` (resolve-first, diff-fails-under-CI). Runner-agnostic —
-# all jobs run on one configurable runner (default ubuntu).#
-# PRE-RELEASE NOTE: the pubspec carries sibling-repo path deps that a lone
-# CI checkout cannot resolve, so every job here fails at `pub get` until the
-# family release flips the deps to hosted (fluent_bundle/docs/UPDATING.md
-# release checklist). The workflow is authored final so nothing changes at
-# activation beyond the pubspec.
-# No platforms job — the gate is blocked-loud pre-release (see the Makefile);
-# the release checklist flips it in.
+# all jobs run on one configurable runner (default ubuntu).
 name: CI
 
 on:
@@ -106,6 +99,38 @@ jobs:
         with:
           make-target: analyze-floor
 
+  platforms:
+    name: Platform support
+    needs: [inputs, changes]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ${{ needs.inputs.outputs.runner }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: whuppi/ci/actions/make-target@v2.0.5
+        with:
+          make-target: platforms
+
+  test-guards:
+    name: Test guards
+    needs: [inputs, changes]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ${{ needs.inputs.outputs.runner }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: whuppi/ci/actions/make-target@v2.0.5
+        with:
+          make-target: test-guards
+
   test:
     name: Package tests (VM)
     needs: [inputs, changes]
@@ -121,6 +146,24 @@ jobs:
       - uses: whuppi/ci/actions/make-target@v2.0.5
         with:
           make-target: test
+
+  test-web:
+    name: Web tests (Chrome)
+    needs: [inputs, changes]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ${{ needs.inputs.outputs.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: whuppi/ci/actions/make-target@v2.0.5
+        with:
+          make-target: test-web
+          chrome: 'true'
+          headless-display: 'true'
 
   test-example:
     name: Example showcase
@@ -141,7 +184,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [inputs, changes, analyze, analyze-floor, test, test-example]
+    needs: [inputs, changes, analyze, analyze-floor, platforms, test-guards, test, test-web, test-example]
     runs-on: ${{ needs.inputs.outputs.runner }}
     timeout-minutes: 5
     permissions: {}
@@ -153,7 +196,10 @@ jobs:
           CODE: ${{ needs.changes.outputs.code }}
           ANALYZE: ${{ needs.analyze.result }}
           ANALYZE_FLOOR: ${{ needs.analyze-floor.result }}
+          PLATFORMS: ${{ needs.platforms.result }}
+          TEST_GUARDS: ${{ needs.test-guards.result }}
           TEST: ${{ needs.test.result }}
+          TEST_WEB: ${{ needs.test-web.result }}
           TEST_EXAMPLE: ${{ needs.test-example.result }}
         run: |
           # A failed (not skipped) changes job clears its outputs, so CODE
@@ -167,8 +213,8 @@ jobs:
             echo "Doc-only PR — CI gate passes"
             exit 0
           fi
-          if [[ "$ANALYZE" != "success" ]] || [[ "$ANALYZE_FLOOR" != "success" ]] || [[ "$TEST" != "success" ]] || [[ "$TEST_EXAMPLE" != "success" ]]; then
-            echo "FAILED: analyze=$ANALYZE analyze-floor=$ANALYZE_FLOOR test=$TEST test-example=$TEST_EXAMPLE"
+          if [[ "$ANALYZE" != "success" ]] || [[ "$ANALYZE_FLOOR" != "success" ]] || [[ "$PLATFORMS" != "success" ]] || [[ "$TEST_GUARDS" != "success" ]] || [[ "$TEST" != "success" ]] || [[ "$TEST_WEB" != "success" ]] || [[ "$TEST_EXAMPLE" != "success" ]]; then
+            echo "FAILED: analyze=$ANALYZE analyze-floor=$ANALYZE_FLOOR platforms=$PLATFORMS test-guards=$TEST_GUARDS test=$TEST test-web=$TEST_WEB test-example=$TEST_EXAMPLE"
             exit 1
           fi
           echo "All CI checks passed"

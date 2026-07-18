@@ -17,8 +17,6 @@ topics:
 environment:
   sdk: ^3.7.0
 
-# Path dependency on fluent_bundle while these packages are unpublished — the
-# release checklist flips it to a hosted version at publish time.
 dependencies:
   # The package this is a backend FOR — re-exported from its main library.
   fluent_bundle: ^0.1.0
