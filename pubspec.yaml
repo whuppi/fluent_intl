@@ -29,7 +29,7 @@ dependencies:
 
 dev_dependencies:
   # Lint rules
-  lints: ^5.0.0
+  lints: ">=5.0.0 <7.0.0"
 
   # Test runner
   test: ^1.25.0
